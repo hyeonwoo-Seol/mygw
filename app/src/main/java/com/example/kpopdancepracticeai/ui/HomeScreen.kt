@@ -8,10 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.kpopdancepracticeai.ui.theme.KpopDancePracticeAITheme // 테마 임포트
 
 // --- 데이터 클래스 (임시) ---
 // 실제로는 ViewModel에서 이 리스트를 관리하게 됩니다.
@@ -50,131 +48,106 @@ val challengeSongs = listOf(
 // --- 홈 화면 ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
-    var selectedTab by remember { mutableStateOf("home") }
+fun HomeScreen(
+    onSearchClick: () -> Unit // 검색창 클릭 시 호출될 함수
+) {
     var searchText by remember { mutableStateOf("") }
 
-    Scaffold(
-        // 1. 하단 탭 (Figma의 'Tabs' 구현)
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("홈") },
-                    selected = selectedTab == "home",
-                    onClick = { selectedTab = "home" }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Analytics, contentDescription = "Analysis") },
-                    label = { Text("분석") },
-                    selected = selectedTab == "analysis",
-                    onClick = { selectedTab = "analysis" /* TODO: 분석 화면으로 이동 */ }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("프로필") },
-                    selected = selectedTab == "profile",
-                    onClick = { selectedTab = "profile" /* TODO: 프로필 화면으로 이동 */ }
-                )
+    // Scaffold와 BottomBar가 제거되고 LazyColumn이 최상위
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        // --- 앱 타이틀 ---
+        item {
+            Text(
+                text = "KPOP 댄스 연습 앱",
+                style = MaterialTheme.typography.headlineLarge, // 32.sp, SemiBold
+                fontWeight = FontWeight(600),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+            )
+        }
+
+        // --- 검색창 (클릭만 가능하도록 수정) ---
+        item {
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                label = { Text("연습할 곡을 검색하세요") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clickable { onSearchClick() }, // 클릭 시 Search 탭으로 이동
+                readOnly = true, // 실제 입력은 SearchScreen에서
+                enabled = false // 클릭 이벤트는 받지만, 입력은 비활성화
+            )
+        }
+
+        // --- 섹션 1: 인기 급상승 안무 ---
+        item {
+            SectionTitle(title = "인기 급상승 안무")
+        }
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(popularSongs) { song ->
+                    SongCard(
+                        artist = song.artist,
+                        title = song.title,
+                        views = song.views,
+                        onClick = { /* TODO: 곡 상세 화면으로 이동 */ }
+                    )
+                }
             }
         }
-    ) { innerPadding ->
-        // 2. 스크롤 가능한 세로 리스트 (LazyColumn)
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding) // Scaffold가 제공하는 내부 여백 적용
-        ) {
-            // --- 앱 타이틀 ---
-            item {
-                Text(
-                    text = "KPOP 댄스 연습 앱",
-                    style = MaterialTheme.typography.headlineLarge, // 32.sp, SemiBold
-                    fontWeight = FontWeight(600),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
-                )
-            }
 
-            // --- 검색창 (보고서 기반) ---
-            item {
-                OutlinedTextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    label = { Text("연습할 곡을 검색하세요") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    singleLine = true
-                )
-            }
-
-            // --- 섹션 1: 인기 급상승 안무 ---
-            item {
-                SectionTitle(title = "인기 급상승 안무")
-            }
-            item {
-                // 3. 스크롤 가능한 가로 리스트 (LazyRow)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(popularSongs) { song ->
-                        SongCard(
-                            artist = song.artist,
-                            title = song.title,
-                            views = song.views,
-                            onClick = { /* TODO: 곡 상세 화면으로 이동 */ }
-                        )
-                    }
+        // --- 섹션 2: 인기 급상승 챌린지 ---
+        item {
+            SectionTitle(title = "인기 급상승 챌린지")
+        }
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(challengeSongs) { song ->
+                    SongCard(
+                        artist = song.artist,
+                        title = song.title,
+                        views = song.views,
+                        onClick = { /* TODO: 곡 상세 화면으로 이동 */ }
+                    )
                 }
             }
+        }
 
-            // --- 섹션 2: 인기 급상승 챌린지 ---
-            item {
-                SectionTitle(title = "인기 급상승 챌린지")
-            }
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(challengeSongs) { song ->
-                        SongCard(
-                            artist = song.artist,
-                            title = song.title,
-                            views = song.views,
-                            onClick = { /* TODO: 곡 상세 화면으로 이동 */ }
-                        )
-                    }
+        // --- 섹션 3: 최근 내가 조회한 안무 ---
+        item {
+            SectionTitle(title = "최근 내가 조회한 안무")
+        }
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 임시로 popularSongs 사용
+                items(popularSongs.reversed()) { song ->
+                    SongCard(
+                        artist = song.artist,
+                        title = song.title,
+                        views = song.views,
+                        onClick = { /* TODO: 곡 상세 화면으로 이동 */ }
+                    )
                 }
             }
+        }
 
-            // --- 섹션 3: 최근 내가 조회한 안무 ---
-            item {
-                SectionTitle(title = "최근 내가 조회한 안무")
-            }
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // 임시로 popularSongs 사용
-                    items(popularSongs.reversed()) { song ->
-                        SongCard(
-                            artist = song.artist,
-                            title = song.title,
-                            views = song.views,
-                            onClick = { /* TODO: 곡 상세 화면으로 이동 */ }
-                        )
-                    }
-                }
-            }
-
-            // 콘텐츠가 하단 탭에 가려지지 않도록 여백 추가
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+        // 콘텐츠가 하단 탭에 가려지지 않도록 여백 추가
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -251,7 +224,7 @@ fun SongCard(
 @Composable
 fun HomeScreenPreview() {
     // 임시 테마 적용 (실제로는 MainActivity의 테마를 따름)
-    MaterialTheme {
-        HomeScreen()
+    KpopDancePracticeAITheme {
+        HomeScreen(onSearchClick = {})
     }
 }

@@ -17,9 +17,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.*
+import com.example.kpopdancepracticeai.ui.theme.KpopDancePracticeAITheme // 테마 임포트 (필요할 수 있음)
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onLoginSuccess: () -> Unit
+) {
     // 1. 상태 관리: 사용자의 입력을 기억하기 위한 변수
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -78,7 +82,7 @@ fun LoginScreen() {
             Button(
                 onClick = {
                     // TODO: ViewModel을 통해 로그인 로직 호출
-                    // 예: viewModel.loginWithEmail(email, password)
+                    onLoginSuccess()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -133,9 +137,13 @@ fun LoginScreen() {
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    // 앱의 테마를 여기에 적용하면 좋습니다.
-    // 예: MyProjectTheme { ... }
-    Surface {
-        LoginScreen()
+    // ⭐️⭐️⭐️ [오류 수정] ⭐️⭐️⭐️
+    // KpopDancePracticeAITheme 같은 본인 테마로 감싸주는 것이 좋습니다.
+    KpopDancePracticeAITheme {
+        Surface {
+            // onLoginSuccess 파라미터가 누락되었었습니다.
+            // 프리뷰에서는 비어있는 람다를 전달합니다.
+            LoginScreen(onLoginSuccess = {})
+        }
     }
 }

@@ -8,9 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.kpopdancepracticeai.ui.LoginScreen // 방금 만든 LoginScreen 임포트
+import com.example.kpopdancepracticeai.ui.LoginScreen
 import com.example.kpopdancepracticeai.ui.theme.KpopDancePracticeAITheme // 본인의 테마 이름
 import com.example.kpopdancepracticeai.ui.HomeScreen
+import com.example.kpopdancepracticeai.ui.KpopDancePracticeApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,9 +23,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // ⭐️ 여기에 로그인 화면을 호출합니다!
-                    LoginScreen()
-                    HomeScreen()
+                    KpopDancePracticeApp()
                 }
             }
         }

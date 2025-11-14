@@ -1,13 +1,11 @@
 package com.example.kpopdancepracticeai.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,7 +22,7 @@ import com.example.kpopdancepracticeai.ui.theme.KpopDancePracticeAITheme
 fun SearchScreen() {
     // 1. 상태 관리: 검색어, 탭, 필터 선택 상태
     var searchText by remember { mutableStateOf("") }
-    var selectedTab by remember { mutableStateOf("search") } // "search" 탭을 기본값으로
+    // var selectedTab by remember { mutableStateOf("search") } // 🚨 Scaffold와 함께 삭제
 
     // 필터 선택 상태 (null은 "선택 안 함"을 의미)
     var selectedDifficulty by remember { mutableStateOf<String?>(null) }
@@ -32,136 +30,107 @@ fun SearchScreen() {
     var selectedTimeline by remember { mutableStateOf<String?>(null) }
     var selectedTempo by remember { mutableStateOf<String?>(null) }
 
-    Scaffold(
-        // 2. 하단 네비게이션 바 (홈, 검색, 프로필)
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("홈") },
-                    selected = selectedTab == "home",
-                    onClick = { selectedTab = "home" /* TODO: 홈 화면 이동 */ }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                    label = { Text("검색") },
-                    selected = selectedTab == "search",
-                    onClick = { selectedTab = "search" }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Analytics, contentDescription = "Analysis") },
-                    label = { Text("분석") },
-                    selected = selecteddTab == "analysis",
-                    onClick = { selectedTab = "analysis" /* TODO: 분석 화면 이동 */ }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("프로필") },
-                    selected = selectedTab == "profile",
-                    onClick = { selectedTab = "profile" /* TODO: 프로필 화면 이동 */ }
-                )
+    // 🚨 Scaffold( ... ) { innerPadding -> 괄호 전체 삭제
+
+    // 3. 스크롤 가능한 본문 (LazyColumn이 최상위)
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            // .padding(innerPadding) // 🚨 Scaffold와 함께 삭제
+            .padding(horizontal = 16.dp), // 좌우 여백
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // --- 화면 타이틀 ---
+        item {
+            Text(
+                text = "검색",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight(600),
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        }
+
+        // --- 4. 검색 입력창 (TextField) ---
+        item {
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it }, // 여기서 실제 입력 처리
+                placeholder = { Text("노래, 아티스트, 챌린지 검색") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(30.dp), // 피그마의 둥근 모서리
+                singleLine = true
+            )
+        }
+
+        // --- 5. 검색 필터 (Card 안에 배치) ---
+        item {
+            Surface( // 피그마의 '검색 배경'
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, Color(0xffd6deff)) // 피그마의 테두리
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    // --- 난이도별 검색 ---
+                    FilterSection(
+                        title = "난이도별 검색",
+                        options = listOf("쉬움", "보통", "어려움"),
+                        selectedOption = selectedDifficulty,
+                        onOptionSelected = { selectedDifficulty = it }
+                    )
+
+                    // --- 아티스트 ---
+                    FilterSection(
+                        title = "아티스트",
+                        options = listOf("보이그룹", "걸그룹"),
+                        selectedOption = selectedArtist,
+                        onOptionSelected = { selectedArtist = it }
+                    )
+
+                    // --- 타임라인 ---
+                    FilterSection(
+                        title = "타임라인",
+                        options = listOf("최신곡", "인기곡"),
+                        selectedOption = selectedTimeline,
+                        onOptionSelected = { selectedTimeline = it }
+                    )
+
+                    // --- 탬포 ---
+                    FilterSection(
+                        title = "탬포",
+                        options = listOf("빠른 탬포", "보통 탬포", "느린 탬포"),
+                        selectedOption = selectedTempo,
+                        onOptionSelected = { selectedTempo = it }
+                    )
+                }
             }
         }
-    ) { innerPadding ->
-        // 3. 스크롤 가능한 본문
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding) // 하단 탭에 가려지지 않도록 패딩 적용
-                .padding(horizontal = 16.dp), // 좌우 여백
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // --- 화면 타이틀 ---
-            item {
-                Text(
-                    text = "검색",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight(600),
-                    modifier = Modifier.padding(top = 16.dp)
-                )
+
+        // --- 6. 검색 버튼 ---
+        item {
+            Button(
+                onClick = {
+                    // TODO: ViewModel을 통해 검색 로직 호출
+                    // (searchText, selectedDifficulty, selectedArtist, ...)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("검색", fontSize = 16.sp, fontWeight = FontWeight(500))
             }
+        }
 
-            // --- 4. 검색 입력창 (TextField) ---
-            item {
-                OutlinedTextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    placeholder = { Text("노래, 아티스트, 챌린지 검색") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(30.dp), // 피그마의 둥근 모서리
-                    singleLine = true
-                )
-            }
-
-            // --- 5. 검색 필터 (Card 안에 배치) ---
-            item {
-                Surface( // 피그마의 '검색 배경'
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, Color(0xffd6deff)) // 피그마의 테두리
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
-                    ) {
-                        // --- 난이도별 검색 ---
-                        FilterSection(
-                            title = "난이도별 검색",
-                            options = listOf("쉬움", "보통", "어려움"),
-                            selectedOption = selectedDifficulty,
-                            onOptionSelected = { selectedDifficulty = it }
-                        )
-
-                        // --- 아티스트 ---
-                        FilterSection(
-                            title = "아티스트",
-                            options = listOf("보이그룹", "걸그룹"),
-                            selectedOption = selectedArtist,
-                            onOptionSelected = { selectedArtist = it }
-                        )
-
-                        // --- 타임라인 ---
-                        FilterSection(
-                            title = "타임라인",
-                            options = listOf("최신곡", "인기곡"),
-                            selectedOption = selectedTimeline,
-                            onOptionSelected = { selectedTimeline = it }
-                        )
-
-                        // --- 탬포 ---
-                        FilterSection(
-                            title = "탬포",
-                            options = listOf("빠른 탬포", "보통 탬포", "느린 탬포"),
-                            selectedOption = selectedTempo,
-                            onOptionSelected = { selectedTempo = it }
-                        )
-                    }
-                }
-            }
-
-            // --- 6. 검색 버튼 ---
-            item {
-                Button(
-                    onClick = {
-                        // TODO: ViewModel을 통해 검색 로직 호출
-                        // (searchText, selectedDifficulty, selectedArtist, ...)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text("검색", fontSize = 16.sp, fontWeight = FontWeight(500))
-                }
-            }
-
-            // --- 하단 여백 ---
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+        // --- 하단 여백 ---
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
+    // } // 🚨 Scaffold 닫는 괄호 삭제
 }
 
 // 7. 재사용 가능한 필터 섹션
@@ -171,7 +140,7 @@ fun FilterSection(
     title: String,
     options: List<String>,
     selectedOption: String?,
-    onOptionSelected: (String) -> Unit
+    onOptionSelected: (String?) -> Unit // ⭐️ null을 받을 수 있도록 변경
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -190,7 +159,7 @@ fun FilterSection(
                 FilterChip(
                     selected = isSelected,
                     onClick = {
-                        // 이미 선택된 것을 다시 누르면 선택 해제
+                        // 이미 선택된 것을 다시 누르면 선택 해제 (null 전달)
                         if (isSelected) onOptionSelected(null)
                         else onOptionSelected(option)
                     },
@@ -204,6 +173,10 @@ fun FilterSection(
                         labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                     border = FilterChipDefaults.filterChipBorder(
+                        // ⭐️⭐️⭐️ [오류 수정] ⭐️⭐️⭐️
+                        enabled = true, // <-- 이 파라미터가 누락되었습니다.
+                        selected = isSelected, // <-- 이 파라미터가 누락되었습니다.
+                        // ⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️
                         borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                         selectedBorderColor = chipColors.border,
                         borderWidth = 1.dp,
