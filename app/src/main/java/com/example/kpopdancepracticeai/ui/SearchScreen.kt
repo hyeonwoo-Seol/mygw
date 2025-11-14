@@ -16,10 +16,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kpopdancepracticeai.ui.theme.KpopDancePracticeAITheme
+import androidx.compose.foundation.layout.PaddingValues
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun SearchScreen() {
+fun SearchScreen(
+    paddingValues: PaddingValues
+) {
     // 1. 상태 관리: 검색어, 탭, 필터 선택 상태
     var searchText by remember { mutableStateOf("") }
     // var selectedTab by remember { mutableStateOf("search") } // 🚨 Scaffold와 함께 삭제
@@ -36,8 +39,8 @@ fun SearchScreen() {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            // .padding(innerPadding) // 🚨 Scaffold와 함께 삭제
             .padding(horizontal = 16.dp), // 좌우 여백
+        contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // --- 화면 타이틀 ---
@@ -226,6 +229,6 @@ private fun getChipColors(option: String): ChipUiColors {
 @Composable
 fun SearchScreenPreview() {
     KpopDancePracticeAITheme { // 본인의 테마 적용
-        SearchScreen()
+        SearchScreen(paddingValues = PaddingValues())
     }
 }

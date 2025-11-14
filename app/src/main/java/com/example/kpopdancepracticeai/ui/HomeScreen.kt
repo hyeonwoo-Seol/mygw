@@ -1,7 +1,7 @@
 package com.example.kpopdancepracticeai.ui // 본인의 패키지 이름 확인
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.clickable // ⭐️ [수정] clickable이 사용됩니다.
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import com.example.kpopdancepracticeai.ui.theme.KpopDancePracticeAITheme // 테마 임포트
 
 // --- 데이터 클래스 (임시) ---
-// 실제로는 ViewModel에서 이 리스트를 관리하게 됩니다.
 data class Song(
     val id: String,
     val artist: String,
@@ -49,24 +48,19 @@ val challengeSongs = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onSearchClick: () -> Unit // 검색창 클릭 시 호출될 함수
+    onSearchClick: () -> Unit, // 검색창 클릭 시 호출될 함수
+    paddingValues: PaddingValues // ⭐️ [추가] Scaffold로부터 패딩을 받음
 ) {
     var searchText by remember { mutableStateOf("") }
 
-    // Scaffold와 BottomBar가 제거되고 LazyColumn이 최상위
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        // ⭐️ [수정] contentPadding을 사용하여 Top/BottomBar 뒤에 콘텐츠가 가려지지 않게 함
+        contentPadding = paddingValues,
+        verticalArrangement = Arrangement.spacedBy(16.dp) // 섹션 간 간격
     ) {
-        // --- 앱 타이틀 ---
-        item {
-            Text(
-                text = "KPOP 댄스 연습 앱",
-                style = MaterialTheme.typography.headlineLarge, // 32.sp, SemiBold
-                fontWeight = FontWeight(600),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
-            )
-        }
+        // ⭐️ [삭제] "KPOP 댄스 연습 앱" Text item이 삭제됨 (AppTopBar로 이동)
 
         // --- 검색창 (클릭만 가능하도록 수정) ---
         item {
@@ -77,10 +71,11 @@ fun HomeScreen(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable { onSearchClick() }, // 클릭 시 Search 탭으로 이동
+                    .padding(horizontal = 16.dp) // 검색창 좌우 여백
+                    .clickable { onSearchClick() }, // ⭐️ [오류 수정] clickable을 Modifier에 적용
                 readOnly = true, // 실제 입력은 SearchScreen에서
-                enabled = false // 클릭 이벤트는 받지만, 입력은 비활성화
+                // enabled = false, // ⭐️ [오류 수정] 클릭을 받기 위해 enabled는 true여야 함 (기본값)
+                // onClick = { onSearchClick() } // ⭐️ [오류 수정] 이 파라미터는 존재하지 않으므로 삭제
             )
         }
 
@@ -144,11 +139,6 @@ fun HomeScreen(
                 }
             }
         }
-
-        // 콘텐츠가 하단 탭에 가려지지 않도록 여백 추가
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
     }
 }
 
@@ -159,7 +149,8 @@ fun SectionTitle(title: String) {
         text = title,
         style = MaterialTheme.typography.titleMedium, // 16.sp, SemiBold
         fontWeight = FontWeight(600),
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 12.dp)
+        // ⭐️ [수정] 패딩을 LazyColumn의 verticalArrangement로 옮겼으므로 top 패딩만 조절
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
     )
 }
 
@@ -185,13 +176,12 @@ fun SongCard(
                 .background(Color.LightGray),
             contentAlignment = Alignment.Center
         ) {
-            // TODO: AsyncImage 라이브러리(Coil)로 실제 이미지 로드
             Icon(Icons.Default.MusicNote, contentDescription = title, tint = Color.Gray)
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 곡 정보 (피그마 스타일 적용)
+        // 곡 정보
         Text(
             text = artist,
             fontSize = 12.sp,
@@ -223,8 +213,8 @@ fun SongCard(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    // 임시 테마 적용 (실제로는 MainActivity의 테마를 따름)
     KpopDancePracticeAITheme {
-        HomeScreen(onSearchClick = {})
+        // ⭐️ [수정] 프리뷰가 정상 작동하도록 빈 PaddingValues 전달
+        HomeScreen(onSearchClick = {}, paddingValues = PaddingValues())
     }
 }

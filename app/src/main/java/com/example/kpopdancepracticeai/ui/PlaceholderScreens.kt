@@ -7,12 +7,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 
 // 임시 화면
 @Composable
-fun PlaceholderScreen(screenName: String) {
+fun PlaceholderScreen(screenName: String, paddingValues: PaddingValues) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues),
         contentAlignment = Alignment.Center
     ) {
         Text(
