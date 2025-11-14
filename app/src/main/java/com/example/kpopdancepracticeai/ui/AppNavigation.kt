@@ -18,8 +18,11 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.ExitToApp
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,6 +53,9 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object ProfileEdit : Screen("profileEdit", "프로필 설정", Icons.Default.Edit)
     object PracticeSettings : Screen("practiceSettings", "연습 화면 설정", Icons.Outlined.Settings)
     object NotificationSettings : Screen("notificationSettings", "알림 설정", Icons.Outlined.Notifications)
+    object PrivacySettings : Screen("privacySettings", "개인정보 보호 및 권한", Icons.Outlined.Shield)
+    object AppInfo : Screen("appInfo", "앱 정보", Icons.Outlined.Info)
+    object Withdrawal : Screen("withdrawal", "회원 탈퇴", Icons.Outlined.ExitToApp) // ⭐️ 추가
 }
 
 // 피그마 디자인에 맞춰 3개 탭만 표시
@@ -67,11 +73,17 @@ fun KpopDancePracticeApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // 로그인/프로필수정/연습설정/알림설정 화면에서 상/하단 바 숨김
-    val showMainBars = currentRoute != Screen.Login.route &&
-            currentRoute != Screen.ProfileEdit.route &&
-            currentRoute != Screen.PracticeSettings.route &&
-            currentRoute != Screen.NotificationSettings.route
+    // 상/하단 바 숨길 화면 목록 (⭐️ 수정)
+    val screensToHideBars = listOf(
+        Screen.Login.route,
+        Screen.ProfileEdit.route,
+        Screen.PracticeSettings.route,
+        Screen.NotificationSettings.route,
+        Screen.PrivacySettings.route,
+        Screen.AppInfo.route,
+        Screen.Withdrawal.route // ⭐️ 추가
+    )
+    val showMainBars = currentRoute !in screensToHideBars
 
     // 피그마 디자인의 그라데이션 배경
     val appGradient = Brush.verticalGradient(
@@ -223,7 +235,7 @@ fun AppNavHost(
             PlaceholderScreen(screenName = "분석", paddingValues = innerPadding)
         }
 
-        // 프로필 화면 (Scaffold 패딩 적용)
+        // 프로필 화면 (Scaffold 패딩 적용) (⭐️ 수정)
         composable(Screen.Profile.route) {
             ProfileScreen(
                 paddingValues = innerPadding,
@@ -235,6 +247,15 @@ fun AppNavHost(
                 },
                 onNavigateToNotificationSettings = {
                     navController.navigate(Screen.NotificationSettings.route)
+                },
+                onNavigateToPrivacySettings = {
+                    navController.navigate(Screen.PrivacySettings.route)
+                },
+                onNavigateToAppInfo = {
+                    navController.navigate(Screen.AppInfo.route)
+                },
+                onNavigateToWithdrawal = { // ⭐️ 추가
+                    navController.navigate(Screen.Withdrawal.route)
                 }
             )
         }
@@ -262,6 +283,41 @@ fun AppNavHost(
             NotificationSettingsScreen(
                 onBackClick = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        // 개인정보 보호 및 권한 화면 (전체 화면, innerPadding 적용 X)
+        composable(Screen.PrivacySettings.route) {
+            PrivacySettingsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // 앱 정보 화면 (전체 화면, innerPadding 적용 X)
+        composable(Screen.AppInfo.route) {
+            AppInfoScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // 회원 탈퇴 화면 (전체 화면, innerPadding 적용 X) (⭐️ 추가)
+        composable(Screen.Withdrawal.route) {
+            WithdrawalScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onWithdrawConfirm = {
+                    // 탈퇴 시 로그인 화면으로 이동 (모든 백스택 제거)
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }

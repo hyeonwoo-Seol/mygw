@@ -1,9 +1,11 @@
 package com.example.kpopdancepracticeai.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -35,7 +37,10 @@ fun ProfileScreen(
     paddingValues: PaddingValues,
     onNavigateToProfileEdit: () -> Unit,
     onNavigateToPracticeSettings: () -> Unit,
-    onNavigateToNotificationSettings: () -> Unit
+    onNavigateToNotificationSettings: () -> Unit,
+    onNavigateToPrivacySettings: () -> Unit,
+    onNavigateToAppInfo: () -> Unit,
+    onNavigateToWithdrawal: () -> Unit
 ) {
     // "통계", "업적", "설정" 탭 상태 관리
     var selectedTab by remember { mutableStateOf("통계") }
@@ -77,9 +82,36 @@ fun ProfileScreen(
                 }
             }
             "업적" -> {
+                // ⭐️ [수정] Placeholder를 업적 리스트로 교체
                 item {
-                    // TODO: 업적 탭 콘텐츠
-                    PlaceholderContent(text = "업적 전체 목록 (준비중)")
+                    // 1. 화면 타이틀
+                    Text(
+                        text = "업적 및 성과",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp) // 탭 버튼과 간격
+                    )
+                }
+
+                // 2. 업적 카드 리스트 (임시 데이터)
+                val achievementsList = listOf(
+                    Triple("완벽주의자", "95% 이상의 정확도 5회 달성", 0.8f),
+                    Triple("연습 벌레", "총 연습 시간 100시간 달성", 0.41f),
+                    Triple("BTS 마스터", "BTS 챌린지 10개 완료", 0.5f),
+                    Triple("챌린지 헌터", "모든 챌린지 1회 이상 완료", 0.1f),
+                    Triple("신입 댄서", "첫 연습 영상 업로드", 1.0f)
+                )
+
+                items(achievementsList) { (title, description, progress) ->
+                    AchievementCard(
+                        title = title,
+                        description = description,
+                        progress = progress,
+                        progressText = "${(progress * 100).toInt()}%"
+                    )
                 }
             }
             "설정" -> {
@@ -87,7 +119,10 @@ fun ProfileScreen(
                     SettingsContent(
                         onNavigateToProfileEdit = onNavigateToProfileEdit,
                         onNavigateToPracticeSettings = onNavigateToPracticeSettings,
-                        onNavigateToNotificationSettings = onNavigateToNotificationSettings
+                        onNavigateToNotificationSettings = onNavigateToNotificationSettings,
+                        onNavigateToPrivacySettings = onNavigateToPrivacySettings,
+                        onNavigateToAppInfo = onNavigateToAppInfo,
+                        onNavigateToWithdrawal = onNavigateToWithdrawal
                     )
                 }
             }
@@ -485,7 +520,10 @@ fun PlaceholderContent(text: String) {
 fun SettingsContent(
     onNavigateToProfileEdit: () -> Unit,
     onNavigateToPracticeSettings: () -> Unit,
-    onNavigateToNotificationSettings: () -> Unit
+    onNavigateToNotificationSettings: () -> Unit,
+    onNavigateToPrivacySettings: () -> Unit,
+    onNavigateToAppInfo: () -> Unit,
+    onNavigateToWithdrawal: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         // 설정 타이틀
@@ -531,14 +569,14 @@ fun SettingsContent(
                     text = "개인정보 보호 및 권한",
                     icon = Icons.Outlined.Shield,
                     iconBgColor = Color(0xFFE6F7EB), // 피그마 참고
-                    onClick = { /* TODO: 개인정보 화면으로 이동 */ }
+                    onClick = onNavigateToPrivacySettings
                 )
                 SettingsMenuDivider()
                 SettingsMenuItem(
                     text = "앱 정보",
                     icon = Icons.Outlined.Info,
                     iconBgColor = Color(0xFFF3F4F6), // 피그마 참고
-                    onClick = { /* TODO: 앱 정보 화면으로 이동 */ }
+                    onClick = onNavigateToAppInfo
                 )
                 SettingsMenuDivider()
                 SettingsMenuItem(
@@ -546,7 +584,7 @@ fun SettingsContent(
                     icon = Icons.Outlined.ExitToApp,
                     iconBgColor = Color(0xFFFFF0F0), // 피그마 참고
                     textColor = Color.Red, // 빨간색 텍스트
-                    onClick = { /* TODO: 회원 탈퇴 다이얼로그 표시 */ }
+                    onClick = onNavigateToWithdrawal
                 )
             }
         }
@@ -610,12 +648,83 @@ fun SettingsMenuItem(
  */
 @Composable
 fun SettingsMenuDivider() {
-    HorizontalDivider( // ⭐️ [오류 수정] Divider -> HorizontalDivider
+    HorizontalDivider(
         color = Color.Gray.copy(alpha = 0.15f),
         thickness = 1.dp,
         // 좌우 여백을 아이콘 영역 다음부터 시작하도록 조정
         modifier = Modifier.padding(start = 76.dp, end = 20.dp)
     )
+}
+
+/**
+ * 5. "업적" 탭의 개별 업적 카드 (새로 추가)
+ */
+@Composable
+fun AchievementCard(
+    title: String,
+    description: String,
+    progress: Float,
+    progressText: String
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(), // LazyColumn의 arrangement가 간격 조절
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, Color(0xFFDAE0FF)) // 디자인 참고
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // 1. 업적 명
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                color = Color.Black
+            )
+            // 2. 업적 설명
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.DarkGray
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 3. 진행률 텍스트
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "진행률",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                )
+                Text(
+                    text = progressText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
+
+            // 4. 프로그레스 바
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                trackColor = Color(0x33030213), // 연한 회색 트랙
+                color = Color(0xff030213) // 진한 검정색 진행률
+            )
+        }
+    }
 }
 
 
@@ -628,7 +737,10 @@ fun ProfileScreenPreview() {
             paddingValues = PaddingValues(),
             onNavigateToProfileEdit = {},
             onNavigateToPracticeSettings = {},
-            onNavigateToNotificationSettings = {}
+            onNavigateToNotificationSettings = {},
+            onNavigateToPrivacySettings = {},
+            onNavigateToAppInfo = {},
+            onNavigateToWithdrawal = {}
         )
     }
 }
