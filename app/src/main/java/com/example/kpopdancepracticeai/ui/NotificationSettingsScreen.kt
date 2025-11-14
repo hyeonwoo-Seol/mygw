@@ -217,7 +217,7 @@ fun NotificationSettingsDivider() {
     HorizontalDivider( // ⭐️ [오류 수정] Divider -> HorizontalDivider
         color = Color.Gray.copy(alpha = 0.15f),
         thickness = 1.dp,
-        modifier = Modifier.padding(vertical = 4.dp, start = 40.dp) // 아이콘 영역만큼 패딩
+        modifier = Modifier.padding(start = 40.dp, top = 4.dp, bottom = 4.dp) // 아이콘 영역만큼 패딩
     )
 }
 
