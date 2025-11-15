@@ -28,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.kpopdancepracticeai.ui.theme.KpopDancePracticeAITheme
 import kotlinx.coroutines.delay
@@ -113,6 +115,7 @@ val dummyUserAnalysis = UserAnalysis(
 @Composable
 fun SongDetailScreen(
     songId: String,
+    navController: NavHostController, // ⭐️ [수정] NavController 추가
     onBackClick: () -> Unit
 ) {
     // --- ViewModel 로직 (임시) ---
@@ -167,7 +170,8 @@ fun SongDetailScreen(
                     // 로드 성공
                     SongDetailContent(
                         songInfo = state.songInfo,
-                        userAnalysis = state.userAnalysis
+                        userAnalysis = state.userAnalysis,
+                        navController = navController // ⭐️ [수정] navController 전달
                     )
                 }
                 is SongDetailUiState.Error -> {
@@ -191,7 +195,8 @@ fun SongDetailScreen(
 @Composable
 fun SongDetailContent(
     songInfo: SongInfo,
-    userAnalysis: UserAnalysis?
+    userAnalysis: UserAnalysis?,
+    navController: NavHostController // ⭐️ [수정] NavController 추가
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -205,7 +210,10 @@ fun SongDetailContent(
         // --- 2. 연습 시작 버튼 ---
         item {
             Button(
-                onClick = { /* TODO: 연습 화면으로 이동 */ },
+                onClick = {
+                    // ⭐️ [수정] 클릭 시 곡 파트 선택 화면으로 이동
+                    navController.navigate("songPartSelect/${songInfo.id}")
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 24.dp)
@@ -753,6 +761,7 @@ fun SongDetailScreenPreview() {
         )) {
             SongDetailScreen(
                 songId = "preview_song_id",
+                navController = rememberNavController(), // ⭐️ [수정] 프리뷰용 NavController 추가
                 onBackClick = {}
             )
         }

@@ -63,6 +63,9 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     // ⭐️ [신규] 검색 시스템을 위한 경로 추가
     object SearchResults : Screen("searchResults/{query}", "검색 결과", Icons.Default.Search)
     object SongDetail : Screen("songDetail/{songId}", "곡 상세", Icons.Default.MusicNote)
+
+    // ⭐️ [신규] 곡 파트 선택 화면 경로 추가
+    object SongPartSelect : Screen("songPartSelect/{songId}", "곡 파트 선택", Icons.Default.MusicNote)
 }
 
 // 피그마 디자인에 맞춰 3개 탭만 표시
@@ -89,7 +92,8 @@ fun KpopDancePracticeApp() {
         Screen.PrivacySettings.route,
         Screen.AppInfo.route,
         Screen.Withdrawal.route, // ⭐️ 추가
-        Screen.SongDetail.route // ⭐️ [신규] 곡 상세 화면 추가 (계획.md 참고)
+        Screen.SongDetail.route, // ⭐️ [신규] 곡 상세 화면 추가 (계획.md 참고)
+        Screen.SongPartSelect.route // ⭐️ [신규] 곡 파트 선택 화면 추가
     )
     val showMainBars = currentRoute !in screensToHideBars
 
@@ -345,13 +349,28 @@ fun AppNavHost(
             )
         }
 
-        // ⭐️ [신규] 곡 상세 화면
+        // ⭐️ [신규] 곡 상세 화면 (수정: NavController 전달)
         composable(
             route = Screen.SongDetail.route,
             arguments = listOf(navArgument("songId") { type = NavType.StringType })
         ) { backStackEntry ->
             val songId = backStackEntry.arguments?.getString("songId") ?: ""
             SongDetailScreen(
+                songId = songId,
+                navController = navController, // ⭐️ NavController 전달
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // ⭐️ [신규] 곡 파트 선택 화면
+        composable(
+            route = Screen.SongPartSelect.route,
+            arguments = listOf(navArgument("songId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val songId = backStackEntry.arguments?.getString("songId") ?: ""
+            SongPartSelectScreen(
                 songId = songId,
                 onBackClick = {
                     navController.popBackStack()
