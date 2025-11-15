@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.ExitToApp
@@ -38,10 +39,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 
 // --- 1. 내비게이션 경로(Route) 정의 ---
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
@@ -56,6 +59,10 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object PrivacySettings : Screen("privacySettings", "개인정보 보호 및 권한", Icons.Outlined.Shield)
     object AppInfo : Screen("appInfo", "앱 정보", Icons.Outlined.Info)
     object Withdrawal : Screen("withdrawal", "회원 탈퇴", Icons.Outlined.ExitToApp) // ⭐️ 추가
+
+    // ⭐️ [신규] 검색 시스템을 위한 경로 추가
+    object SearchResults : Screen("searchResults/{query}", "검색 결과", Icons.Default.Search)
+    object SongDetail : Screen("songDetail/{songId}", "곡 상세", Icons.Default.MusicNote)
 }
 
 // 피그마 디자인에 맞춰 3개 탭만 표시
@@ -81,7 +88,8 @@ fun KpopDancePracticeApp() {
         Screen.NotificationSettings.route,
         Screen.PrivacySettings.route,
         Screen.AppInfo.route,
-        Screen.Withdrawal.route // ⭐️ 추가
+        Screen.Withdrawal.route, // ⭐️ 추가
+        Screen.SongDetail.route // ⭐️ [신규] 곡 상세 화면 추가 (계획.md 참고)
     )
     val showMainBars = currentRoute !in screensToHideBars
 
@@ -225,8 +233,10 @@ fun AppNavHost(
 
         // 검색 화면 (Scaffold 패딩 적용)
         composable(Screen.Search.route) {
+            // ⭐️ [수정] navController를 SearchScreen에 전달
             SearchScreen(
-                paddingValues = innerPadding
+                paddingValues = innerPadding,
+                navController = navController
             )
         }
 
@@ -318,6 +328,33 @@ fun AppNavHost(
                             inclusive = true
                         }
                     }
+                }
+            )
+        }
+
+        // ⭐️ [신규] 검색 결과 화면
+        composable(
+            route = Screen.SearchResults.route,
+            arguments = listOf(navArgument("query") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val query = backStackEntry.arguments?.getString("query") ?: ""
+            SearchResultsScreen(
+                query = query,
+                navController = navController,
+                paddingValues = innerPadding
+            )
+        }
+
+        // ⭐️ [신규] 곡 상세 화면
+        composable(
+            route = Screen.SongDetail.route,
+            arguments = listOf(navArgument("songId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val songId = backStackEntry.arguments?.getString("songId") ?: ""
+            SongDetailScreen(
+                songId = songId,
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
         }

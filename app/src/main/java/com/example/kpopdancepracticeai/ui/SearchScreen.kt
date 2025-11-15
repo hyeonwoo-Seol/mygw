@@ -17,11 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kpopdancepracticeai.ui.theme.KpopDancePracticeAITheme
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SearchScreen(
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    navController: NavHostController // ⭐️ [수정] NavController 추가
 ) {
     // 1. 상태 관리: 검색어, 탭, 필터 선택 상태
     var searchText by remember { mutableStateOf("") }
@@ -117,8 +120,13 @@ fun SearchScreen(
         item {
             Button(
                 onClick = {
-                    // TODO: ViewModel을 통해 검색 로직 호출
+                    // ⭐️ [수정] 검색 결과 화면으로 이동
                     // (searchText, selectedDifficulty, selectedArtist, ...)
+                    // TODO: 필터 값들도 함께 전달하거나, query만 전달 후 결과 화면에서 필터링
+                    // 여기서는 계획.md에 따라 searchText (query)만 전달합니다.
+                    if (searchText.isNotBlank()) {
+                        navController.navigate("searchResults/$searchText")
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -229,6 +237,9 @@ private fun getChipColors(option: String): ChipUiColors {
 @Composable
 fun SearchScreenPreview() {
     KpopDancePracticeAITheme { // 본인의 테마 적용
-        SearchScreen(paddingValues = PaddingValues())
+        SearchScreen(
+            paddingValues = PaddingValues(),
+            navController = rememberNavController() // ⭐️ [수정] 프리뷰용 NavController
+        )
     }
 }
